@@ -38,6 +38,7 @@ class _MacDockState extends State<MacDock> {
     Icons.map,
   ];
   int? hoveredIndex; // Tracks the index of the icon being hovered
+  int? draggingIndex; // Tracks the current space created for dragging
   IconData? draggingApp; // The app currently being dragged
 
   @override
@@ -49,59 +50,79 @@ class _MacDockState extends State<MacDock> {
         child: Align(
           alignment: Alignment.bottomCenter,
           child: Container(
-            padding: const EdgeInsets.symmetric(vertical:  20, horizontal: 15),
+            height: 90,
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
             decoration: BoxDecoration(
               color: Colors.grey[900],
               borderRadius: BorderRadius.circular(20),
-              // boxShadow: [
-              //   BoxShadow(
-              //     color: Colors.black45,
-              //     blurRadius: 15,
-              //     offset: Offset(0, 5),
-              //   ),
-              // ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: apps.asMap().entries.map((entry) {
                 final index = entry.key;
                 final app = entry.value;
-
-                return DragTarget<IconData>(
-                  onAccept: (draggedApp) {
-                    setState(() {
-                      final oldIndex = apps.indexOf(draggedApp);
-                      apps.removeAt(oldIndex);
-                      apps.insert(index, draggedApp);
-                    });
-                  },
-                  onWillAccept: (data) => data != app,
-                  builder: (context, candidateData, rejectedData) {
-                    return Draggable<IconData>(
-                      data: app,
-                      onDragStarted: () => setState(() => draggingApp = app),
-                      onDragCompleted: () => setState(() => draggingApp = null),
-                      onDraggableCanceled: (_, __) =>
-                          setState(() => draggingApp = null),
-                      feedback: _buildAppIcon(app, isDragging: true),
-                      childWhenDragging: const SizedBox(
-                        width: 0,
-                        height: 0,
-                      ),
-                      child: MouseRegion(
-                        onEnter: (_) => setState(() => hoveredIndex = index),
-                        onExit: (_) => setState(() => hoveredIndex = null),
-                        child: _buildAppIcon(
-                          app,
-                          isHovered: hoveredIndex == index,
-                          isDragging: draggingApp == app,
-                          hoverScale: _calculateScale(index),
-                        ),
-                      ),
-                    );
-                  },
+            return Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    
+                    DragTarget<IconData>(
+                      onAccept: (draggedApp) {
+                        setState(() {
+                          final oldIndex = apps.indexOf(draggedApp);
+                          apps.removeAt(oldIndex);
+                          apps.insert(index, draggedApp);
+                          draggingIndex = null; // Reset space
+                        });
+                      },
+                      onWillAccept: (data) {
+                        setState(() => draggingIndex = index);
+                        return data != app;
+                      },
+                      onLeave: (_) {
+                        if (draggingIndex == index) {
+                          setState(() => draggingIndex = null);
+                        }
+                      },
+                      builder: (context, candidateData, rejectedData) {
+                        return 
+                        
+                        Draggable<IconData>(
+                          data: app,
+                          onDragStarted: () => setState(() {
+                            draggingApp = app;
+                            draggingIndex = index;
+                          }),
+                          onDragCompleted: () =>
+                              setState(() => draggingApp = null),
+                          onDraggableCanceled: (_, __) => setState(() {
+                            draggingApp = null;
+                            draggingIndex = null;
+                          }),
+                          feedback: _buildAppIcon(app, isDragging: true),
+                          childWhenDragging: const SizedBox(
+                            width: 0,
+                            height: 0,
+                          ),
+                          child: MouseRegion(
+                            onEnter: (_) =>
+                                setState(() => hoveredIndex = index),
+                            onExit: (_) => setState(() => hoveredIndex = null),
+                            child: 
+                           
+                            _buildAppIcon(
+                              app,
+                              isHovered: hoveredIndex == index,
+                              isDragging: draggingApp == app,
+                              hoverScale: _calculateScale(index),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 );
-              }).toList(),
+              }).toList()
+               
             ),
           ),
         ),
@@ -135,10 +156,10 @@ class _MacDockState extends State<MacDock> {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Container(
-              height:isDragging ?80: 50,
-              width: isDragging ?80 :50,
+              height: isDragging ? 70 : 50,
+              width: isDragging ? 70 : 50,
               decoration: BoxDecoration(
-                color:  Colors.primaries[app.hashCode % Colors.primaries.length],
+                color: Colors.primaries[app.hashCode % Colors.primaries.length],
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: isHovered || isDragging
                     ? [
