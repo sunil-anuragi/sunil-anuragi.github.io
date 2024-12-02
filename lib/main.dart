@@ -57,73 +57,73 @@ class _MacDockState extends State<MacDock> {
               borderRadius: BorderRadius.circular(20),
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: apps.asMap().entries.map((entry) {
-                final index = entry.key;
-                final app = entry.value;
-            return Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    
-                    DragTarget<IconData>(
-                      onAccept: (draggedApp) {
-                        setState(() {
-                          final oldIndex = apps.indexOf(draggedApp);
-                          apps.removeAt(oldIndex);
-                          apps.insert(index, draggedApp);
-                          draggingIndex = null; // Reset space
-                        });
-                      },
-                      onWillAccept: (data) {
-                        setState(() => draggingIndex = index);
-                        return data != app;
-                      },
-                      onLeave: (_) {
-                        if (draggingIndex == index) {
-                          setState(() => draggingIndex = null);
-                        }
-                      },
-                      builder: (context, candidateData, rejectedData) {
-                        return 
-                        
-                        Draggable<IconData>(
-                          data: app,
-                          onDragStarted: () => setState(() {
-                            draggingApp = app;
-                            draggingIndex = index;
-                          }),
-                          onDragCompleted: () =>
-                              setState(() => draggingApp = null),
-                          onDraggableCanceled: (_, __) => setState(() {
-                            draggingApp = null;
-                            draggingIndex = null;
-                          }),
-                          feedback: _buildAppIcon(app, isDragging: true),
-                          childWhenDragging: const SizedBox(
-                            width: 0,
-                            height: 0,
-                          ),
-                          child: MouseRegion(
-                            onEnter: (_) =>
-                                setState(() => hoveredIndex = index),
-                            onExit: (_) => setState(() => hoveredIndex = null),
-                            child: 
-                           
-                            _buildAppIcon(
-                              app,
-                              isHovered: hoveredIndex == index,
-                              isDragging: draggingApp == app,
-                              hoverScale: _calculateScale(index),
+                mainAxisSize: MainAxisSize.min,
+                children: apps.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final app = entry.value;
+
+                  return Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (draggingApp != null && draggingIndex == index)
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: 60,
+                        ),
+                      DragTarget<IconData>(
+                        onAccept: (draggedApp) {
+                          setState(() {
+                            final oldIndex = apps.indexOf(draggedApp);
+                            apps.removeAt(oldIndex);
+                            apps.insert(index, draggedApp);
+                            draggingIndex = null; // Reset space
+                          });
+                        },
+                        onWillAccept: (data) {
+                          setState(() => draggingIndex = index);
+                          return data != app;
+                        },
+                        onLeave: (_) {
+                          if (draggingIndex == index) {
+                            setState(() => draggingIndex = null);
+                          }
+                        },
+                        builder: (context, candidateData, rejectedData) {
+                          return Draggable<IconData>(
+                            data: app,
+                            onDragStarted: () => setState(() {
+                              draggingApp = app;
+                              draggingIndex = index;
+                            }),
+                            onDragCompleted: () =>
+                                setState(() => draggingApp = null),
+                            onDraggableCanceled: (_, __) => setState(() {
+                              draggingApp = null;
+                              draggingIndex = null;
+                            }),
+                            feedback: _buildAppIcon(app, isDragging: true),
+                            childWhenDragging: const SizedBox(
+                              width: 0,
+                              height: 0,
                             ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                );
-              }).toList()
-               
-            ),
+                            child: MouseRegion(
+                              onEnter: (_) =>
+                                  setState(() => hoveredIndex = index),
+                              onExit: (_) =>
+                                  setState(() => hoveredIndex = null),
+                              child: _buildAppIcon(
+                                app,
+                                isHovered: hoveredIndex == index,
+                                isDragging: draggingApp == app,
+                                hoverScale: _calculateScale(index),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                }).toList()),
           ),
         ),
       ),
